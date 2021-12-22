@@ -1,7 +1,7 @@
-import * as RenderPreProcess from './lib/Systems/RenderPreProcess.js';
-import * as ClearCamera from './lib/Systems/ClearCamera.js';
-import * as SkyboxRenderer from './lib/Systems/SkyboxRenderer.js';
-import * as RenderPostProcess from './lib/Systems/RenderPostProcess.js';
+import * as RenderPreProcess from './Systems/RenderPreProcess.js';
+import * as ClearCamera from './Systems/ClearCamera.js';
+import * as SkyboxRenderer from './Systems/SkyboxRenderer.js';
+import * as RenderPostProcess from './Systems/RenderPostProcess.js';
 
 function invokeCallback(systemArray, callbackName, ...args) {
     systemArray.forEach(system => {

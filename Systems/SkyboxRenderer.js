@@ -2,7 +2,7 @@ import { loadShader, loadCubemap } from '../WebGLUtil.js';
 import { mat4, quat } from '../GLMatrix/index.js';
 import { requestImage, requestText } from '../Ajax.js';
 import * as Camera from '../DataSources/Camera.js';
-import { pathPrefix, skyboxTexturePaths } from '../DataSources/Paths.js';
+import { config as pathConfig } from '../DataSources/Paths.js';
 
 let ready = false;
 
@@ -65,14 +65,17 @@ let texture = null;
 let shader = null;
 
 async function loadShaders(gl) {
-    let vert = await requestText(pathPrefix + '/Shaders/Skybox.vert');
-    let frag = await requestText(pathPrefix + '/Shaders/Skybox.frag');
+    let vert = await requestText(pathConfig.pathPrefix + '/Shaders/Skybox.vert');
+    let frag = await requestText(pathConfig.pathPrefix + '/Shaders/Skybox.frag');
     shader = loadShader(gl, vert, frag);
 }
 
 async function loadTextures(gl) {
-    let textureImages = [];
-    skyboxTexturePaths.forEach(path => textureImages.push(await requestImage(path)));
+    let textureImages = []
+    for (let path of pathConfig.skyboxTexturePaths) {
+        textureImages.push(await requestImage(path));
+    }
+    console.log(textureImages);
     texture = loadCubemap(gl, textureImages);
 }
 
@@ -101,7 +104,7 @@ function loadMeshes(gl) {
 }
 
 async function setupRender(gl) {
-    if (!skyboxTexturePaths) {
+    if (!pathConfig.skyboxTexturePaths) {
         return;
     }
 

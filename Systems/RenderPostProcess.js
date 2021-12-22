@@ -1,7 +1,7 @@
 import * as Framebuffers from '../DataSources/Framebuffers.js';
 import { loadShader } from '../WebGLUtil.js';
 import { requestText } from '../Ajax.js';
-import { pathPrefix } from '../DataSources/Paths.js';
+import { config as pathConfig } from '../DataSources/Paths.js';
 
 const quad = [
     -1.0, 1.0, 0.0, 1.0,
@@ -37,8 +37,8 @@ async function setup(gl) {
     gl.enableVertexAttribArray(1);
     gl.bindVertexArray(null);
 
-    let vert = await requestText(pathPrefix + '/Shaders/PostProcess.vert');
-    let frag = await requestText(pathPrefix + '/Shaders/PostProcess.frag');
+    let vert = await requestText(pathConfig.pathPrefix + '/Shaders/PostProcess.vert');
+    let frag = await requestText(pathConfig.pathPrefix + '/Shaders/PostProcess.frag');
     shader = loadShader(gl, vert, frag);
 
     setupDone = true;

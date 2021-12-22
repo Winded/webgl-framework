@@ -1,2 +1,4 @@
-export var pathPrefix = '';
-export var skyboxTexturePaths = null;
+export const config = {
+    pathPrefix: '',
+    skyboxTexturePaths: null,
+}
