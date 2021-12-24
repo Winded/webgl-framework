@@ -1,5 +1,19 @@
 import { vec3 } from './GLMatrix/index.js';
 
+export const quad = {
+    vertices: [
+        // x, y, z, nx, ny, nz, u, v
+        -0.5,  0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+         0.5,  0.5, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0,
+         0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+        -0.5, -0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0,
+    ],
+    indices: [
+        0, 1, 2,
+        0, 2, 3,
+    ],
+};
+
 export function generateSphereMesh(radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI) {
     widthSegments = Math.max( 3, Math.floor( widthSegments ) );
     heightSegments = Math.max( 2, Math.floor( heightSegments ) );
