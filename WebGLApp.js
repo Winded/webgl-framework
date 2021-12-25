@@ -2,6 +2,7 @@ import * as RenderPreProcess from './Systems/RenderPreProcess.js';
 import * as ClearCamera from './Systems/ClearCamera.js';
 import * as SkyboxRenderer from './Systems/SkyboxRenderer.js';
 import * as RenderPostProcess from './Systems/RenderPostProcess.js';
+import * as Viewport from './DataSources/Viewport.js';
 
 function invokeCallback(systemArray, callbackName, ...args) {
     systemArray.forEach(system => {
@@ -24,6 +25,9 @@ export const defaultSystems = {
 
 export function run(canvasElementId, systems) {
     const canvas = document.getElementById(canvasElementId);
+    Viewport.canvas.elementId = canvasElementId;
+    Viewport.resolution.width = canvas.width;
+    Viewport.resolution.height = canvas.height;
     const gl = canvas.getContext("webgl2");
   
     if (gl === null) {
