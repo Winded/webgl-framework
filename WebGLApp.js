@@ -4,7 +4,7 @@ import * as SkyboxRenderer from './Systems/SkyboxRenderer.js';
 import * as RenderPostProcess from './Systems/RenderPostProcess.js';
 import * as Viewport from './DataSources/Viewport.js';
 
-function invokeCallback(systemArray, callbackName, ...args) {
+export function invokeCallback(systemArray, callbackName, ...args) {
     systemArray.forEach(system => {
         if (system[callbackName]) {
             system[callbackName](...args);
