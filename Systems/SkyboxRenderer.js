@@ -75,7 +75,6 @@ async function loadTextures(gl) {
     for (let path of pathConfig.skyboxTexturePaths) {
         textureImages.push(await requestImage(path));
     }
-    console.log(textureImages);
     texture = loadCubemap(gl, textureImages);
 }
 
