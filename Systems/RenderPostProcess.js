@@ -1,7 +1,7 @@
-import * as Framebuffers from '../DataSources/Framebuffers.js';
+import Framebuffers from '../DataSources/Framebuffers.js';
 import { loadShader } from '../WebGLUtil.js';
 import { requestText } from '../Ajax.js';
-import { config as pathConfig } from '../DataSources/Paths.js';
+import Paths from '../DataSources/Paths.js';
 
 const quad = [
     -1.0, 1.0, 0.0, 1.0,
@@ -13,69 +13,66 @@ const quad = [
     -1.0, -1.0, 0.0, 0.0,
 ];
 
-let vbo = null;
-let vao = null;
-let shader = null;
-let setupDone = false;
+export default class RenderPostProcess {
+    /**
+     * 
+     * @param {WebGL2RenderingContext} gl 
+     * @param {Framebuffers} framebuffers 
+     * @param {Paths} paths 
+     */
+    constructor(gl, framebuffers, paths) {
+        this.gl = gl;
+        this.framebuffers = framebuffers;
+        this.paths = paths;
 
-/**
- *  
- * @param {WebGL2RenderingContext} gl 
- */
-async function setup(gl) {
-    vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(quad), gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 4 * 4, 0);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 4 * 4, 2 * 4);
-    gl.enableVertexAttribArray(1);
-    gl.bindVertexArray(null);
-
-    let vert = await requestText(pathConfig.pathPrefix + '/Shaders/PostProcess.vert');
-    let frag = await requestText(pathConfig.pathPrefix + '/Shaders/PostProcess.frag');
-    shader = loadShader(gl, vert, frag);
-
-    setupDone = true;
-}
-
-/**
- * 
- * @param {WebGL2RenderingContext} gl 
- */
-export function start(gl) {
-    setup(gl);
-}
-
-/**
- * 
- * @param {float} deltaTime 
- * @param {WebGL2RenderingContext} gl 
- */
-export function render(deltaTime, gl) {
-    if (!setupDone) {
-        return;
+        this.ready = false;
     }
 
-    let buffers = Framebuffers.renderFramebuffer;
-    if (!buffers.colorTexture) {
-        return;
+    async setup() {
+        this.vbo = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(quad), this.gl.STATIC_DRAW);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    
+        this.vao = this.gl.createVertexArray();
+        this.gl.bindVertexArray(this.vao);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
+        this.gl.vertexAttribPointer(0, 2, this.gl.FLOAT, false, 4 * 4, 0);
+        this.gl.enableVertexAttribArray(0);
+        this.gl.vertexAttribPointer(1, 2, this.gl.FLOAT, false, 4 * 4, 2 * 4);
+        this.gl.enableVertexAttribArray(1);
+        this.gl.bindVertexArray(null);
+    
+        let vert = await requestText(this.paths.pathPrefix + '/Shaders/PostProcess.vert');
+        let frag = await requestText(this.paths.pathPrefix + '/Shaders/PostProcess.frag');
+        this.shader = loadShader(this.gl, vert, frag);
+    
+        this.ready = true;
     }
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    onStart() {
+        this.setup();
+    }
 
-    gl.disable(gl.DEPTH_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.disable(gl.BLEND);
+    onRender() {
+        if (!this.ready) {
+            return;
+        }
 
-    gl.useProgram(shader);
-    gl.bindVertexArray(vao);
-    gl.bindTexture(gl.TEXTURE_2D, buffers.colorTexture);
-
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+        if (!this.framebuffers.colorTexture) {
+            return;
+        }
+    
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+    
+        this.gl.disable(this.gl.DEPTH_TEST);
+        this.gl.disable(this.gl.CULL_FACE);
+        this.gl.disable(this.gl.BLEND);
+    
+        this.gl.useProgram(this.shader);
+        this.gl.bindVertexArray(this.vao);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.framebuffers.colorTexture);
+    
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+    }
 }

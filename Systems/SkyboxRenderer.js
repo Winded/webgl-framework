@@ -1,13 +1,8 @@
 import { loadShader, loadCubemap } from '../WebGLUtil.js';
 import { mat4, quat } from '../GLMatrix/index.js';
 import { requestImage, requestText } from '../Ajax.js';
-import * as Camera from '../DataSources/Camera.js';
-import { config as pathConfig } from '../DataSources/Paths.js';
-
-let ready = false;
-
-let viewMatrix = mat4.create();
-let cameraRot = quat.create();
+import Camera from '../DataSources/Camera.js';
+import Paths from '../DataSources/Paths.js';
 
 const skyboxVertices = [
     // positions          
@@ -54,95 +49,82 @@ const skyboxVertices = [
      1.0, -1.0,  1.0
 ];
 
-let mesh = {
-    vao: null,
-    vbo: null,
-    numVertices: 0,
-};
+export default class SkyboxRenderer {
+    /**
+     * 
+     * @param {WebGL2RenderingContext} gl 
+     * @param {Camera} camera 
+     * @param {Paths} paths 
+     */
+    constructor(gl, camera, paths) {
+        this.gl = gl;
+        this.camera = camera;
+        this.paths = paths;
 
-let texture = null;
+        this.viewMatrix = mat4.create();
+        this.cameraRot = quat.create();
 
-let shader = null;
-
-async function loadShaders(gl) {
-    let vert = await requestText(pathConfig.pathPrefix + '/Shaders/Skybox.vert');
-    let frag = await requestText(pathConfig.pathPrefix + '/Shaders/Skybox.frag');
-    shader = loadShader(gl, vert, frag);
-}
-
-async function loadTextures(gl) {
-    let textureImages = []
-    for (let path of pathConfig.skyboxTexturePaths) {
-        textureImages.push(await requestImage(path));
-    }
-    texture = loadCubemap(gl, textureImages);
-}
-
-/**
- * 
- * @param {WebGL2RenderingContext} gl 
- */
-function loadMeshes(gl) {
-    let vertices = new Float32Array(skyboxVertices);
-
-    let vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-
-    let vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 3 * 4, 0);
-    gl.enableVertexAttribArray(0);
-    gl.bindVertexArray(null);
-
-    mesh.vao = vao;
-    mesh.vbo = vbo;
-    mesh.numVertices = skyboxVertices.length;
-}
-
-async function setupRender(gl) {
-    if (!pathConfig.skyboxTexturePaths) {
-        return;
+        this.ready = false;
     }
 
-    await loadShaders(gl);
-    await loadTextures(gl);
-    loadMeshes(gl);
-    ready = true;
-}
+    async setup() {
+        if (!this.paths.skyboxTexturePaths) {
+            return;
+        }
+    
+        let vert = await requestText(this.paths.pathPrefix + '/Shaders/Skybox.vert');
+        let frag = await requestText(this.paths.pathPrefix + '/Shaders/Skybox.frag');
+        this.shader = loadShader(this.gl, vert, frag);
 
-/**
- * 
- * @param {WebGL2RenderingContext} gl 
- */
-export function start(gl) {
-    setupRender(gl);
-}
+        let textureImages = [];
+        for (let path of this.paths.skyboxTexturePaths) {
+            textureImages.push(await requestImage(path));
+        }
+        this.texture = loadCubemap(this.gl, textureImages);
 
-/**
- * 
- * @param {float} deltaTime 
- * @param {WebGL2RenderingContext} gl 
- */
-export function render(deltaTime, gl) {
-    if (!ready) {
-        return;
+        let vertices = new Float32Array(skyboxVertices);
+        let vbo = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vbo);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, vertices, this.gl.STATIC_DRAW);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+        let vao = this.gl.createVertexArray();
+        this.gl.bindVertexArray(vao);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vbo);
+        this.gl.vertexAttribPointer(0, 3, this.gl.FLOAT, false, 3 * 4, 0);
+        this.gl.enableVertexAttribArray(0);
+        this.gl.bindVertexArray(null);
+    
+        this.mesh = {
+            vao: vao,
+            vbo: vbo,
+            numVertices: skyboxVertices.length
+        };
+
+        this.ready = true;
     }
 
-    mat4.getRotation(cameraRot, Camera.properties.viewMatrix);
-    mat4.fromQuat(viewMatrix, cameraRot);
+    onStart() {
+        this.setup();
+    }
 
-    gl.enable(gl.DEPTH_TEST);
-    gl.disable(gl.CULL_FACE);
-    gl.depthFunc(gl.LEQUAL);
+    onRender() {
+        if (!this.ready) {
+            return;
+        }
 
-    gl.useProgram(shader);
-    gl.uniformMatrix4fv(gl.getUniformLocation(shader, "projection"), false, Camera.properties.projectionMatrix);
-    gl.uniformMatrix4fv(gl.getUniformLocation(shader, "view"), false, viewMatrix);
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-    gl.bindVertexArray(mesh.vao);
+        mat4.getRotation(this.cameraRot, this.camera.viewMatrix);
+        mat4.fromQuat(this.viewMatrix, this.cameraRot);
 
-    gl.drawArrays(gl.TRIANGLES, 0, mesh.numVertices);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.disable(this.gl.CULL_FACE);
+        this.gl.depthFunc(this.gl.LEQUAL);
+
+        this.gl.useProgram(this.shader);
+        this.gl.uniformMatrix4fv(this.gl.getUniformLocation(this.shader, "projection"), false, this.camera.projectionMatrix);
+        this.gl.uniformMatrix4fv(this.gl.getUniformLocation(this.shader, "view"), false, this.viewMatrix);
+        this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture);
+        this.gl.bindVertexArray(this.mesh.vao);
+
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, this.mesh.numVertices);
+    }
 }

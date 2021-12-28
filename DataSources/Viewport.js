@@ -1,8 +1,6 @@
-export const canvas = {
-    elementId: null,
-};
+export default class Viewport {
+    canvasElementId = '';
 
-export const resolution = {
-    width: 640,
-    height: 480,
-};
+    width = 640;
+    height = 480;
+}

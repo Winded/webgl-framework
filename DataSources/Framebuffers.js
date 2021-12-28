@@ -1,5 +1,8 @@
-export const renderFramebuffer = {
-    fbo: null,
-    colorTexture: null,
-    depthTexture: null,
-};
+export default class Framebuffers {
+    /** @type {WebGLVertexArrayObject} */
+    fbo = null;
+    /** @type {WebGLTexture} */
+    colorTexture = null;
+    /** @type {WebGLTexture} */
+    depthTexture = null;
+}
