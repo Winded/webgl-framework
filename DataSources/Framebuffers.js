@@ -4,5 +4,7 @@ export default class Framebuffers {
     /** @type {WebGLTexture} */
     colorTexture = null;
     /** @type {WebGLTexture} */
+    brightTexture = null;
+    /** @type {WebGLTexture} */
     depthTexture = null;
 }

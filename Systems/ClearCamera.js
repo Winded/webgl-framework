@@ -13,7 +13,9 @@ export default class {
 
     onRender() {
         const clearColor = this.camera.clearColor;
-        this.gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 1.0);
+        this.gl.drawBuffers([ this.gl.COLOR_ATTACHMENT0, this.gl.COLOR_ATTACHMENT1 ]);
+        this.gl.clearColor(clearColor[0], clearColor[1], clearColor[2], 0.0);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.drawBuffers([ this.gl.COLOR_ATTACHMENT0 ]);
     }
 };

@@ -33,6 +33,13 @@ export default class RenderPreProcess {
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
         this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, buffers.colorTexture, 0);
     
+        buffers.brightTexture = this.gl.createTexture();
+        this.gl.bindTexture(this.gl.TEXTURE_2D, buffers.brightTexture);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, res.width, res.height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT1, this.gl.TEXTURE_2D, buffers.brightTexture, 0);
+    
         buffers.depthTexture = this.gl.createTexture();
         this.gl.bindTexture(this.gl.TEXTURE_2D, buffers.depthTexture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.DEPTH24_STENCIL8, res.width, res.height, 0, this.gl.DEPTH_STENCIL, this.gl.UNSIGNED_INT_24_8, null);

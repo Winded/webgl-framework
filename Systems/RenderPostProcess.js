@@ -57,7 +57,13 @@ export default class RenderPostProcess {
     
         this.gl.useProgram(this.shader);
         this.gl.bindVertexArray(this.vao);
+        this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, this.framebuffers.colorTexture);
+        this.gl.activeTexture(this.gl.TEXTURE1);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.framebuffers.brightTexture);
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.uniform1i(this.gl.getUniformLocation(this.shader, "screen_texture"), 0);
+        this.gl.uniform1i(this.gl.getUniformLocation(this.shader, "bright_texture"), 1);
     
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
     }

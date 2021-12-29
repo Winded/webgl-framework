@@ -23,10 +23,10 @@ uniform samplerCube skybox;
 
 in vec3 texCoords;
 
-out vec4 frag_color;
+out vec3 frag_color;
 
 void main()
 {
-    frag_color = texture(skybox, texCoords);
+    frag_color = texture(skybox, texCoords).rgb;
 }
 `;
