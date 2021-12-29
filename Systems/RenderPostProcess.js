@@ -1,7 +1,7 @@
 import Framebuffers from '../DataSources/Framebuffers.js';
 import { loadShader } from '../WebGLUtil.js';
-import { requestText } from '../Ajax.js';
 import Paths from '../DataSources/Paths.js';
+import { VertexShader as PostProcessVertex, FragmentShader as PostProcessFragment } from '../Shaders/PostProcess.js';
 
 const quad = [
     -1.0, 1.0, 0.0, 1.0,
@@ -24,11 +24,9 @@ export default class RenderPostProcess {
         this.gl = gl;
         this.framebuffers = framebuffers;
         this.paths = paths;
-
-        this.ready = false;
     }
 
-    async setup() {
+    onStart() {
         this.vbo = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(quad), this.gl.STATIC_DRAW);
@@ -43,22 +41,10 @@ export default class RenderPostProcess {
         this.gl.enableVertexAttribArray(1);
         this.gl.bindVertexArray(null);
     
-        let vert = await requestText(this.paths.pathPrefix + '/Shaders/PostProcess.vert');
-        let frag = await requestText(this.paths.pathPrefix + '/Shaders/PostProcess.frag');
-        this.shader = loadShader(this.gl, vert, frag);
-    
-        this.ready = true;
-    }
-
-    onStart() {
-        this.setup();
+        this.shader = loadShader(this.gl, PostProcessVertex, PostProcessFragment);
     }
 
     onRender() {
-        if (!this.ready) {
-            return;
-        }
-
         if (!this.framebuffers.colorTexture) {
             return;
         }

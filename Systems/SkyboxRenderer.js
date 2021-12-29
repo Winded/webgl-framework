@@ -1,8 +1,9 @@
 import { loadShader, loadCubemap } from '../WebGLUtil.js';
 import { mat4, quat } from '../GLMatrix/index.js';
-import { requestImage, requestText } from '../Ajax.js';
+import { requestImage } from '../Ajax.js';
 import Camera from '../DataSources/Camera.js';
 import Paths from '../DataSources/Paths.js';
+import { VertexShader as SkyboxVertex, FragmentShader as SkyboxFragment } from '../Shaders/Skybox.js';
 
 const skyboxVertices = [
     // positions          
@@ -72,9 +73,7 @@ export default class SkyboxRenderer {
             return;
         }
     
-        let vert = await requestText(this.paths.pathPrefix + '/Shaders/Skybox.vert');
-        let frag = await requestText(this.paths.pathPrefix + '/Shaders/Skybox.frag');
-        this.shader = loadShader(this.gl, vert, frag);
+        this.shader = loadShader(this.gl, SkyboxVertex, SkyboxFragment);
 
         let textureImages = [];
         for (let path of this.paths.skyboxTexturePaths) {

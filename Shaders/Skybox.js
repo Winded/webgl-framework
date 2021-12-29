@@ -1,4 +1,4 @@
-#version 300 es
+export const VertexShader = `#version 300 es
 precision highp float;
 
 uniform mat4 projection;
@@ -14,3 +14,19 @@ void main()
     vec4 glPosition = projection * view * vec4(position, 1.0);
     gl_Position = glPosition.xyww;
 }
+`;
+
+export const FragmentShader = `#version 300 es
+precision highp float;
+
+uniform samplerCube skybox;
+
+in vec3 texCoords;
+
+out vec4 frag_color;
+
+void main()
+{
+    frag_color = texture(skybox, texCoords);
+}
+`;
