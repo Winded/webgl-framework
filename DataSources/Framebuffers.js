@@ -7,4 +7,11 @@ export default class Framebuffers {
     brightTexture = null;
     /** @type {WebGLTexture} */
     depthTexture = null;
+
+    normalizedQuad = {
+        /** @type {WebGLBuffer} */
+        vbo: null,
+        /** @type {WebGLVertexArrayObject} */
+        vao: null,
+    };
 }

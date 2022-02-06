@@ -1,6 +1,16 @@
 import Framebuffers from '../DataSources/Framebuffers.js';
 import Viewport from '../DataSources/Viewport.js';
 
+const quad = [
+    -1.0, 1.0, 0.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, -1.0, 1.0, 0.0,
+
+    -1.0, 1.0, 0.0, 1.0,
+    1.0, -1.0, 1.0, 0.0,
+    -1.0, -1.0, 0.0, 0.0,
+];
+
 export default class RenderPreProcess {
     /**
      * 
@@ -51,6 +61,25 @@ export default class RenderPreProcess {
     
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
         this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+
+        {
+            // Normalized quad buffer and vertex array
+            const normalizedQuad = buffers.normalizedQuad;
+
+            normalizedQuad.vbo = this.gl.createBuffer();
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normalizedQuad.vbo);
+            this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(quad), this.gl.STATIC_DRAW);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+        
+            normalizedQuad.vao = this.gl.createVertexArray();
+            this.gl.bindVertexArray(normalizedQuad.vao);
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, normalizedQuad.vbo);
+            this.gl.vertexAttribPointer(0, 2, this.gl.FLOAT, false, 4 * 4, 0);
+            this.gl.enableVertexAttribArray(0);
+            this.gl.vertexAttribPointer(1, 2, this.gl.FLOAT, false, 4 * 4, 2 * 4);
+            this.gl.enableVertexAttribArray(1);
+            this.gl.bindVertexArray(null);
+        }
 
         this.ready = true;
     }

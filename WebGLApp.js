@@ -23,12 +23,14 @@ export function createDefaultSystems(canvasElementId, paths) {
     viewport.height = canvas.height;
     let framebuffers = new Framebuffers();
     let camera = new Camera();
+    let postProcessEffects = [];
 
     return {
         data: {
             viewport: viewport,
             framebuffers: framebuffers,
             camera: camera,
+            postProcessEffects: postProcessEffects,
         },
         preUpdate: [
             new RenderPreProcess(gl, framebuffers, viewport),
@@ -36,7 +38,7 @@ export function createDefaultSystems(canvasElementId, paths) {
         ],
         postUpdate: [
             new SkyboxRenderer(gl, camera, paths),
-            new RenderPostProcess(gl, framebuffers, paths),
+            new RenderPostProcess(gl, framebuffers, paths, viewport, postProcessEffects),
         ]
     };
 }
