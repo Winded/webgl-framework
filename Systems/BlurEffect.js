@@ -7,10 +7,12 @@ export default class BlurEffect {
      * 
      * @param {WebGL2RenderingContext} gl
      * @param {Framebuffers} framebuffers 
+     * @param {boolean} vertical True if blur is done vertically, horizontally otherwise
      */
-    constructor(gl, framebuffers) {
+    constructor(gl, framebuffers, vertical) {
         this.gl = gl;
         this.framebuffers = framebuffers;
+        this.vertical = vertical;
     }
 
     onStart() {
@@ -31,6 +33,7 @@ export default class BlurEffect {
         this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.uniform1i(this.gl.getUniformLocation(this.shader, "screen_texture"), 0);
         this.gl.uniform1i(this.gl.getUniformLocation(this.shader, "bright_texture"), 1);
+        this.gl.uniform1i(this.gl.getUniformLocation(this.shader, "vertical"), this.vertical);
     
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
     }
