@@ -80,6 +80,75 @@ export function loadShader(gl, vertexCode, fragmentCode) {
 }
 
 /**
+ * Load a buffer into WebGL.
+ * @param {WebGL2RenderingContext} gl 
+ * @param {number[]} data 
+ * @param {number} bufferType
+ * 
+ * @returns {WebGLBuffer}
+ */
+export function loadBuffer(gl, data, bufferType) {
+    let buffer = gl.createBuffer();
+    if (buffer === null) {
+        throw new Error("Failed to create WebGL buffer");
+    }
+
+    gl.bindBuffer(bufferType, buffer);
+    gl.bufferData(bufferType, data, gl.STATIC_DRAW);
+    gl.bindBuffer(bufferType, null);
+
+    return buffer;
+}
+
+/**
+ * Create a vertex array object for WebGL.
+ * @param {WebGL2RenderingContext} gl 
+ * @param {WebGLBuffer} elementBuffer 
+ * @param {{
+ *  vertexBuffer: WebGLBuffer;
+ *  stride: number;
+ *  attribPointers: {
+ *      index: number;
+ *      size: number;
+ *      offset: number;
+ *      divisor?: number;
+ *  }[];
+ * }[]} vertexAttributes 
+ * 
+ * @returns {WebGLVertexArrayObject}
+ */
+export function loadVertexArray(gl, elementBuffer, vertexAttributes) {
+    let vao = gl.createVertexArray();
+    if (vao === null) {
+        throw new Error("Failed to create WebGL vertex array");
+    }
+
+    gl.bindVertexArray(vao)
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+
+    for (let vertexBufferAttributes of vertexAttributes) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferAttributes.vertexBuffer);
+        for (let attribPointer of vertexBufferAttributes.attribPointers) {
+            gl.vertexAttribPointer(
+                attribPointer.index,
+                attribPointer.size,
+                gl.FLOAT,
+                false,
+                vertexBufferAttributes.stride * 4,
+                attribPointer.offset * 4
+            );
+            if (attribPointer.divisor !== undefined) {
+                gl.vertexAttribDivisor(attribPointer.index, attribPointer.divisor);
+            }
+            gl.enableVertexAttribArray(attribPointer.index);
+        }
+    }
+
+    gl.bindVertexArray(null);
+    return vao;
+}
+
+/**
  * Load standard vertices and indices into WebGL buffers. Creates a vertex array object.
  * Standard vertex array format is:
  * x, y, z, xnormal, ynormal, znormal, u, v
@@ -93,27 +162,32 @@ export function loadStandardVertexBuffer(gl, vertices, indices) {
     vertices = new Float32Array(vertices);
     indices = new Uint32Array(indices);
 
-    let vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    let vbo = loadBuffer(gl, vertices, gl.ARRAY_BUFFER);
+    let ebo = loadBuffer(gl, indices, gl.ELEMENT_ARRAY_BUFFER);
 
-    let ebo = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-
-    let vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo);
-    gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 8 * 4, 0);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(1, 3, gl.FLOAT, false, 8 * 4, 3 * 4);
-    gl.enableVertexAttribArray(1);
-    gl.vertexAttribPointer(2, 2, gl.FLOAT, false, 8 * 4, 6 * 4);
-    gl.enableVertexAttribArray(2);
-    gl.bindVertexArray(null);
+    let vao = loadVertexArray(gl, ebo, [
+        {
+            vertexBuffer: vbo,
+            stride: 8,
+            attribPointers: [
+                {
+                    index: 0,
+                    size: 3,
+                    offset: 0
+                },
+                {
+                    index: 1,
+                    size: 3,
+                    offset: 3
+                },
+                {
+                    index: 2,
+                    size: 2,
+                    offset: 6
+                },
+            ]
+        }
+    ]);
 
     return {
         vao: vao,
